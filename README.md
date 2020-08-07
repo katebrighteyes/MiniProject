@@ -98,3 +98,9 @@ cd labelImg && sudo pip3 install -r requirements/requirements-linux-python3.txt 
 
 python3 labelImg.py $KITTI_TESTING_IMAGE_2_PATH $PATH_TO_kittinames.txt
 
+< Step 4>
+
+트레이닝
+
+https://github.com/JinFree/darknet_tiny_with_kitti_data
+
