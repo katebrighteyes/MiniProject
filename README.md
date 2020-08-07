@@ -9,6 +9,13 @@ unzip -qq data_object_image_2.zip
 
 unzip -qq data_object_label_2.zip 
 
+압축파일이 손상된 경우
+
+unzip -FF data_object_image_2.zip --out kitti_data_image_2.zip
+
+unzip -FF data_object_label_2.zip --out kitti_data_label_2.zip
+
+
 * 원한다면 coco 데이터셋도 다운받아주세요.
 
 2. git clone convert2yolo
