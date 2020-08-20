@@ -1,0 +1,59 @@
+<launch>
+  <arg name="racecar_version" default="$(optenv RACECAR_VERSION racecar-v2)" doc="system version [racecar-v1, racecar-v2]" />
+
+  <!-- vehicle geometry parameters, footprint, and static transforms -->
+  <include file="$(find racecar)/launch/includes/common/vehicle_geometry.launch.xml">
+    <arg name="racecar_version" value="$(arg racecar_version)" />
+  </include>
+
+  <!-- default (zero) ackermann command -->
+  <node name="zero_ackermann_cmd" pkg="rostopic" type="rostopic" args="pub -r 4 ackermann_cmd_mux/input/default ackermann_msgs/AckermannDriveStamped '{header: auto, drive: {steering_angle: 0.0, speed: 0.0} }'" />
+
+  <!-- priority-based command multiplexer -->
+  <include file="$(find ackermann_cmd_mux)/launch/standalone.launch">
+    <arg name="nodelet_manager_name" value="ackermann_cmd_mux_nodelet_manager" />
+    <arg name="config_file" value="$(find racecar)/config/$(arg racecar_version)/mux.yaml" />
+  </include>
+
+  <!-- controllers -->
+  <include file="$(find racecar)/launch/includes/common/controllers.launch.xml">  
+    <arg name="racecar_version" value="$(arg racecar_version)" />
+  </include>
+  
+  <!-- start electronic speed controller driver -->
+  <include file="$(find racecar)/launch/includes/$(arg racecar_version)/vesc.launch.xml" >
+    <arg name="racecar_version" value="$(arg racecar_version)" />
+  </include>
+
+  <!-- start imu and laser scanner -->
+  <include file="$(find racecar)/launch/includes/common/auto_sensors.launch.xml" >
+    <arg name="racecar_version" value="$(arg racecar_version)" />
+  </include>
+
+  <arg name="joy_teleop_config"
+       default="$(find racecar)/config/$(arg racecar_version)/joy_teleop.yaml" />
+
+  <!-- joystick to ackermann command -->
+  <rosparam file="$(arg joy_teleop_config)" command="load" />
+  <node pkg="joy" type="joy_node" name="joy_node" />
+  <node pkg="yolo_ros" type="yolo_steering.py" name="yolo_xycar" />
+
+  <!-- darknet_ros -->
+  <arg name="yolo_weights_path"          default="$(find darknet_ros)/yolo_network_config/weights"/>
+  <arg name="yolo_config_path"           default="$(find darknet_ros)/yolo_network_config/cfg"/>
+
+  <arg name="ros_param_file"             default="$(find darknet_ros)/config/ros.yaml"/>
+  <arg name="network_param_file"         default="$(find darknet_ros)/config/yolov2-voc.yaml"/>
+
+  <rosparam command="load" ns="darknet_ros" file="$(arg ros_param_file)"/>
+  <rosparam command="load" ns="darknet_ros" file="$(arg network_param_file)"/>
+
+  <arg name="launch_prefix" default=""/>
+
+  <node pkg="darknet_ros" type="darknet_ros" name="darknet_ros" output="screen" launch-prefix="$(arg launch_prefix)">
+    <param name="weights_path"          value="$(arg yolo_weights_path)" />
+    <param name="config_path"           value="$(arg yolo_config_path)" />
+    <remap from="/camera/rgb/image_raw" to="/usb_cam/image_raw"/>
+  </node>
+
+</launch>
