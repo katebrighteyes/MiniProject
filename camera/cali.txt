@@ -1,0 +1,53 @@
+
+roscore
+
+rosrun usb_cam usb_cam_node
+
+========================================
+rosdep install camera_calibration
+
+sudo apt install ros-kinetic-camera-calibration
+or
+sudo apt install ros-melodic-camera-calibration
+
+* square size is 31mm
+
+rosrun camera_calibration cameracalibrator.py --size 8x6 --square 0.031 image:=/usb_cam/image_raw camera:=/usb_cam
+
+========================
+
+1. move checker board until cali button is activated
+
+2. clisk cali button and wait until save button is activated
+
+3. check the picture in the cali view is rectified.
+
+4. click the commit button
+
+
+cd /tmp
+tar -xvzf calibrationdata.tar.gz
+mv ost.txt ost.ini
+rosrun camera_calibration_parsers convert ost.ini camera.yaml
+mkdir ~/.ros/camera_info
+mv camera.yaml ~/.ros/camera_info/
+
+==================
+
+<< usb_cam/image_raw -> usb_cam/image_rect_color>>
+
+cd ~/.ros/camera_info/
+
+cp camera.yaml head_camera.yaml
+
+# modify camera_name and save
+
+rosrun usb_cam usb_cam_node
+
+ROS_NAMESPACE=usb_cam rosrun image_proc image_proc
+
+rosrun image_view image_view image:=usb_cam/image_rect_color
+
+
+
+
