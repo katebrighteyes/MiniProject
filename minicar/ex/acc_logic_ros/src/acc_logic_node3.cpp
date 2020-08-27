@@ -24,14 +24,22 @@ ros::Publisher req_pub;
 darknet_ros_msgs::BoundingBox detect_box;
 darknet_ros_msgs::BoundingBox detect_person;
 
+ 
+
 void msgCallback(const darknet_ros_msgs::BoundingBoxes::ConstPtr& msg)
 {
     //cout<<"Bouding Boxes (Class):" << msg->bounding_boxes[0].Class <<endl;
     if(msg->bounding_boxes[0].Class.compare(target) == 0) {
 	//cout<<">>>>TARGET (Class):" << msg->bounding_boxes[0].Class <<endl;
         detect_target = true;
-	memcpy((void*)&detect_box, (void*)&msg->bounding_boxes[0], 
-             sizeof(darknet_ros_msgs::BoundingBoxes));
+        detect_box.Class = msg->bounding_boxes[0].Class;
+        detect_box.probability = msg->bounding_boxes[0].probability;
+        detect_box.xmin = msg->bounding_boxes[0].xmin;
+        detect_box.ymin = msg->bounding_boxes[0].ymin;
+        detect_box.xmax = msg->bounding_boxes[0].xmax;
+        detect_box.ymax = msg->bounding_boxes[0].ymax;
+	//memcpy((void*)&detect_box, (void*)&msg->bounding_boxes[0], 
+             //sizeof(darknet_ros_msgs::BoundingBoxes));
 
     } else {
         detect_target = false;
@@ -74,11 +82,20 @@ void *test(void *data)
     if(req_num == REQ_STOP) 
     {
       ROS_INFO(">> TOPIC Emergency! STOP!\n");
-      memcpy((void*)&detect_person, (void*)&detect_box, 
-                 sizeof(darknet_ros_msgs::BoundingBoxes));
+        detect_person.Class = detect_box.Class;
+        detect_person.probability = detect_box.probability;
+        detect_person.xmin = detect_box.xmin;
+        detect_person.ymin = detect_box.ymin;
+        detect_person.xmax = detect_box.xmax;
+        detect_person.ymax = detect_box.ymax;
     } else {
-       detect_person.Class = "None";
-       memset((void*)&detect_person, 0x00, sizeof(darknet_ros_msgs::BoundingBoxes));
+        detect_person.Class = "None";
+        detect_person.probability = 0;
+        detect_person.xmin = 0;
+        detect_person.ymin = 0;
+        detect_person.xmax = 0;
+        detect_person.ymax = 0;
+       //memset((void*)&detect_person, 0x00, sizeof(darknet_ros_msgs::BoundingBoxes));
     }    
     req_pub.publish(detect_person);        
 	
