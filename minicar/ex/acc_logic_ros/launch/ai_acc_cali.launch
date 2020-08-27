@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<launch>
+
+  <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" >
+    <param name="video_device" value="/dev/video0" />
+    <param name="image_width" value="640" />
+    <param name="image_height" value="480" />
+    <param name="pixel_format" value="yuyv" />
+    <param name="camera_frame_id" value="usb_cam" />
+    <param name="io_method" value="mmap"/>
+  </node>
+
+  <include file="$(find rplidar_ros)/launch/rplidar.launch"/>
+  
+  <node pkg="image_proc" type="image_proc" name="image_proc" ns="usb_cam"/>
+
+  <!-- Start darknet and ros wrapper -->
+  <include file="$(find darknet_ros)/launch/darknet_ros.launch"/>
+  
+  <node pkg="acc_logic_ros" type="acc_logic_node2" name="acc_logic_node2" output="screen"/>
+
+</launch>
