@@ -1,5 +1,5 @@
 time stamp
-int32 ego_vel
-int32 relative_vel
-int32 relative_dist
+float xpos
+float ypos
+float angle
 int32 acc_cmd
